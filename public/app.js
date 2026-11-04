@@ -75,6 +75,7 @@ const els = {
   cards: $('cards'),
   reportEmpty: $('reportEmpty'),
   safeBtn: $('safeBtn'),
+  undoBtn: $('undoBtn'),
   exportBtn: $('exportBtn'),
   copyBtn: $('copyBtn'),
   timing: $('timing'),
@@ -335,6 +336,7 @@ function renderReport() {
     els.reportMeta.textContent =
       r?.status === 'translating' ? '等待译文…' : r?.status === 'translated' ? '正在审查…' : '等待审核'
     els.safeBtn.disabled = true
+    els.undoBtn.disabled = true
     els.exportBtn.disabled = true
     els.copyBtn.disabled = !r?.translation
     return
@@ -358,6 +360,7 @@ function renderReport() {
     els.cards.replaceChildren(box)
     els.reportMeta.textContent = '失败'
     els.safeBtn.disabled = true
+    els.undoBtn.disabled = true
     els.exportBtn.disabled = false
     els.copyBtn.disabled = !r.translation
     return
@@ -424,6 +427,8 @@ function renderReport() {
   const done = appliedCount(r)
   els.safeBtn.textContent = done && done >= applicable ? '✓ 已生成安全版' : '⚡ 一键生成安全版'
   if (done && done >= applicable) els.safeBtn.disabled = true
+  els.undoBtn.disabled = !done
+  els.undoBtn.textContent = done ? `一键撤销（${done}）` : '一键撤销'
 }
 
 function renderCard(f, r) {
@@ -465,16 +470,19 @@ function renderCard(f, r) {
   fix.className = 'fix'
   fix.dataset.apply = f.id
   const realSuggestion = f.suggestions?.[0]
-  fix.textContent = realSuggestion ? `✓ ${realSuggestion.text}` : '✓ 采纳建议'
-  if (realSuggestion?.note) {
-    const note = document.createElement('span')
-    note.className = 'n'
-    note.textContent = realSuggestion.note
-    fix.append(note)
-  }
-  if (r.applied?.has(f.id)) {
+  const applied = r.applied?.has(f.id)
+  if (applied) {
     fix.classList.add('applied')
-    fix.disabled = true
+    fix.textContent = '↺ 撤销这处修改'
+    fix.title = '点击还原为模型给的译文'
+  } else {
+    fix.textContent = realSuggestion ? `✓ ${realSuggestion.text}` : '✓ 采纳建议'
+    if (realSuggestion?.note) {
+      const note = document.createElement('span')
+      note.className = 'n'
+      note.textContent = realSuggestion.note
+      fix.append(note)
+    }
   }
   sugg.append(fix)
 
@@ -533,11 +541,29 @@ function applyOne(findingId) {
   if (!r?.findings) return
   const f = r.findings.find((x) => x.id === findingId)
   if (!f) return
+
+  // 已采纳的再点一次就是撤销：改动只由 applied 集合推导，删掉即还原
+  if (r.applied.has(f.id)) {
+    r.applied.delete(f.id)
+    renderAll()
+    return toast('已撤销这处修改')
+  }
+
   const seg = buildSegments(r.translation, [f])[0]
   if (!seg) return toast('这句在译文里定位不到，需要手动改', true)
   r.applied.add(f.id)
   renderAll()
   toast('已替换这处表述')
+}
+
+/** 清空当前市场已采纳的修改，还原成模型给的译文 */
+function undoAll() {
+  const r = state.results[state.active]
+  if (!r?.applied?.size) return
+  const n = appliedCount(r)
+  r.applied.clear()
+  renderAll()
+  toast(n ? `已撤销 ${n} 处修改` : '没有可撤销的修改')
 }
 
 function applyAll() {
@@ -1585,6 +1611,7 @@ function bindEvents() {
   })
 
   els.safeBtn.addEventListener('click', applyAll)
+  els.undoBtn.addEventListener('click', undoAll)
   els.exportBtn.addEventListener('click', downloadMarkdown)
   els.copyBtn.addEventListener('click', copyTranslation)
 
