@@ -1,4 +1,4 @@
-﻿:root{
+:root{
   /* 主题色先定义：下面的背景色由它推导 */
   --accent:#7c5cff; --accent-2:#5a7dff; --accent-rgb:124,92,255; --accent-ink:#ded9ff;
   --fs:1;
@@ -8,6 +8,9 @@
   --text:#e9eef5; --muted:#8b96a8; --dim:#5d6879; --faint:#4b5566;
   --p0:#ff5d5d; --p1:#ffb020; --p2:#4d9bff; --p3:#6b7484;
   --ok:#2fd18c;
+
+  /* 空态的上移量：下内边距多出这么多，flex 居中后实际视觉上移一半 */
+  --empty-lift:48px;
 }
 
 /* 背景也跟着主题走：把主色按比例混进中性底色，而不是只换按钮 */
@@ -290,6 +293,16 @@ main{margin-top:14px;flex:1;min-height:0;display:flex;flex-direction:column;gap:
 .tpane .verdict{margin-top:auto}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:220px;gap:6px;color:var(--dim);text-align:center;padding:20px}
 .panel > .empty{flex:1}
+/* 空态要落在两栏的同一水平线上：
+   ① 右栏的空卡区也带 flex:1，会把 .empty 挤到上半区 → 没卡片时直接不占位
+   ② 左栏的图例在没有结果时没有可解释的内容，同样不占位，让 .tpane 撑满整栏 */
+.cards:empty{display:none}
+.panel-left:has(#emptyState:not([hidden])) .legend{display:none}
+/* 空态整体上移到视觉中心稍偏上的位置：正中对齐看着反而偏沉
+   （下内边距比上内边距多出来的部分，由 flex 居中折半成上移量）
+   左栏额外 +16：.tpane 上下内边距是 16/6，16 用来抵消这个不对称 */
+.panel > .empty{padding:20px 20px calc(20px + var(--empty-lift))}
+.tpane > .empty{padding-bottom:calc(36px + var(--empty-lift))}
 .empty-ico{font-size:calc(30px * var(--fs));opacity:.45;margin-bottom:2px;letter-spacing:2px}
 .empty-ico{font-size:calc(34px * var(--fs));opacity:.5;margin-bottom:4px}
 .empty p{font-size:calc(13px * var(--fs))}
