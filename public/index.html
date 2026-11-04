@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跨文化审核官 · Cross-Cultural Auditor</title>
+<link rel="stylesheet" href="/style.css">
+<script>
+  // 首屏前应用偏好，避免主题色闪一下（失败也不影响页面）
+  (function () {
+    try {
+      var p = JSON.parse(localStorage.getItem('cca.prefs') || '{}')
+      var s = document.documentElement.style
+      if (p.accent) {
+        s.setProperty('--accent', p.accent.a)
+        s.setProperty('--accent-2', p.accent.b)
+        s.setProperty('--accent-rgb', p.accent.rgb)
+        s.setProperty('--accent-ink', p.accent.ink)
+      }
+      if (p.fs) s.setProperty('--fs', String(p.fs))
+      if (p.motion === 0) document.documentElement.classList.add('no-motion')
+    } catch (e) {}
+  })()
+</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <div class="mark">✦</div>
+      <div>
+        <h1>跨文化审核官</h1>
+        <div class="sub">Cross-Cultural Auditor</div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="markets" id="markets"></div>
+
+    <div class="mode" id="modeBadge" hidden></div>
+
+    <button class="gear" id="prefsBtn" type="button" title="网页设置" aria-label="网页设置">⚙</button>
+  </header>
+
+  <main>
+    <!-- ── 输入：原文 + 你自己准备的译文 ── -->
+    <section class="inputcard">
+      <div class="input-grid">
+        <div class="icol">
+          <div class="labelrow">
+            <div class="t">中文原文</div>
+            <div class="n"><span id="counter">0</span> / 1200</div>
+          </div>
+          <textarea id="source" rows="3" spellcheck="false"
+            placeholder="贴一段要出海的营销文案，例如：我们的面膜采用天然草本精华，一抹即白，让您爱不释手。女神节送礼首选！"></textarea>
+        </div>
+
+        <div class="icol">
+          <div class="labelrow">
+            <div class="t">目标译文</div>
+            <div class="tabs" id="tabs"></div>
+          </div>
+          <textarea id="translation" rows="3" spellcheck="false" dir="auto"
+            placeholder="粘贴你准备发出去的译文；留空则由 AI 翻译后一起审"></textarea>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="ex">
+          <span>示例</span>
+          <button type="button" class="exbtn" data-ex="beauty">美妆</button>
+          <button type="button" class="exbtn" data-ex="tech">3C 数码</button>
+          <button type="button" class="exbtn" data-ex="tea">新茶饮</button>
+        </div>
+
+        <button id="aiBtn" class="mini" type="button">AI 翻译本页</button>
+
+        <label class="tone">
+          语气
+          <select id="tone">
+            <option value="professional">专业</option>
+            <option value="premium">高端</option>
+            <option value="friendly">亲切</option>
+            <option value="__custom">自定义…</option>
+          </select>
+          <input id="toneCustom" type="text" maxlength="40" spellcheck="false"
+                 placeholder="如：克制、像朋友聊天" hidden>
+        </label>
+
+        <button id="runBtn" class="run" type="button">
+          开始审核 <kbd>⌘↵</kbd>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── 结果 ── -->
+    <div class="grid">
+
+      <!-- 左：译文 -->
+      <section class="panel panel-left">
+        <div class="phead">
+          <div class="t">译文</div>
+          <div class="mchip" id="activeMarket">—</div>
+          <div class="spacer"></div>
+          <div class="meta" id="transMeta"></div>
+        </div>
+
+        <div class="tpane">
+          <div class="empty" id="emptyState">
+            <div class="empty-ico">⌁</div>
+            <p>贴原文和你准备发出去的译文，点「开始审核」</p>
+            <p class="dim">没有译文也不要紧——留空，让 AI 先翻一版，你再改</p>
+          </div>
+
+          <div class="trans" id="trans" hidden></div>
+          <div class="verdict" id="verdict" hidden></div>
+        </div>
+
+        <div class="legend" id="legend">
+          <div><i class="dot" style="background:var(--p0)"></i>P0 必改</div>
+          <div><i class="dot" style="background:var(--p1)"></i>P1 高风险</div>
+          <div><i class="dot" style="background:var(--p2)"></i>P2 建议</div>
+          <div class="legend-note" id="legendNote"></div>
+        </div>
+      </section>
+
+      <!-- 右：报告 -->
+      <section class="panel">
+        <div class="phead">
+          <div class="t">审核报告</div>
+          <div class="spacer"></div>
+          <div class="meta" id="reportMeta">等待审核</div>
+        </div>
+
+        <div class="scorewrap" id="scorewrap" hidden>
+          <div class="ring" id="ring"><div class="num" id="scoreNum">—</div></div>
+          <div class="side">
+            <div class="level" id="levelLabel"></div>
+            <div class="bars" id="bars"></div>
+            <div class="reason" id="reason"></div>
+          </div>
+        </div>
+
+        <div class="empty" id="reportEmpty">
+          <div class="empty-ico">▤</div>
+          <p>审核结果会出现在这里</p>
+          <p class="dim">风险分 · 问题清单 · 可直接替换的改写</p>
+        </div>
+
+        <div class="cards" id="cards"></div>
+      </section>
+    </div>
+
+    <div class="statusbar idle" id="statusbar"><span class="spin"></span><span id="statusText"></span></div>
+
+    <!-- ── 操作 ── -->
+    <div class="actions">
+      <button id="safeBtn" class="safe" type="button" disabled>⚡ 一键生成安全版</button>
+      <button id="exportBtn" class="ghost" type="button" disabled>导出 Markdown</button>
+      <button id="copyBtn" class="ghost" type="button" disabled>复制译文</button>
+      <div class="timing" id="timing"></div>
+    </div>
+  </main>
+
+  <div class="disclaimer">
+    <b>说明</b>：结果为 AI 辅助建议，不构成法律意见；涉及功效宣称与食品成分的文案，请以目标市场法规与当地律师意见为准。
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<!-- ── 模型设置 ── -->
+<div class="modal" id="settingsModal" hidden>
+  <div class="modal-mask" data-close></div>
+  <div class="modal-card" role="dialog" aria-label="模型设置">
+    <div class="modal-head">
+      <div class="t">模型设置</div>
+      <div class="sub">密钥只保存在本浏览器</div>
+      <button class="xbtn" type="button" data-close aria-label="关闭">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="field">
+        <label>服务商</label>
+        <div class="providers" id="providers"></div>
+      </div>
+
+      <div class="field">
+        <label for="baseUrl">接口地址</label>
+        <input id="baseUrl" type="text" spellcheck="false" placeholder="https://api.deepseek.com/v1">
+      </div>
+
+      <div class="toggle">
+        <input type="checkbox" id="useProxy" aria-label="使用反向代理">
+        <span>使用反向代理</span>
+      </div>
+
+      <div class="field" id="proxyField" hidden>
+        <label for="proxyUrl">代理地址</label>
+        <input id="proxyUrl" type="text" spellcheck="false" placeholder="https://your-proxy.example.com/v1">
+      </div>
+
+      <div class="field">
+        <label for="apiKey">API 密钥</label>
+        <div class="keyrow">
+          <input id="apiKey" type="password" spellcheck="false" autocomplete="off" placeholder="sk-...">
+          <button class="peek" id="peekBtn" type="button">显示</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="model">模型</label>
+        <div class="keyrow picker">
+          <input id="model" type="text" spellcheck="false" placeholder="选择或填写模型名" autocomplete="off">
+          <button class="peek toggle" id="modelToggle" type="button" aria-label="展开模型列表" title="展开模型列表"></button>
+          <button class="peek" id="fetchModels" type="button">拉取列表</button>
+        </div>
+        <div class="picker-panel" id="modelPanel" hidden></div>
+        <div class="hint" id="modelHint"></div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="ghost" id="testBtn" type="button">测试连接</button>
+      <button class="ghost danger" id="clearBtn" type="button">清除配置</button>
+      <span class="test-result" id="testResult"></span>
+      <div class="spacer"></div>
+      <button class="ghost" type="button" data-close>取消</button>
+      <button class="run" id="saveBtn" type="button">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 网页设置 ── -->
+<div class="modal" id="prefsModal" hidden>
+  <div class="modal-mask" data-close-prefs></div>
+  <div class="modal-card" role="dialog" aria-label="网页设置">
+    <div class="modal-head">
+      <div class="t">网页设置</div>
+      <div class="sub">只影响这个浏览器</div>
+      <button class="xbtn" type="button" data-close-prefs aria-label="关闭">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="field">
+        <label>主色调</label>
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="field">
+        <label>字号</label>
+        <div class="seg" id="fsSeg">
+          <button type="button" data-fs="0.9">小</button>
+          <button type="button" data-fs="1">标准</button>
+          <button type="button" data-fs="1.1">大</button>
+          <button type="button" data-fs="1.2">特大</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>界面动效</label>
+        <div class="seg" id="motionSeg">
+          <button type="button" data-motion="1">开启</button>
+          <button type="button" data-motion="0">关闭</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>排查</label>
+        <div class="seg">
+          <button type="button" id="openLogsBtn">查看调用日志</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="ghost" id="resetPrefs" type="button">恢复默认</button>
+      <div class="spacer"></div>
+      <button class="run" type="button" data-close-prefs>完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 调用日志 ── -->
+<div class="modal" id="logsModal" hidden>
+  <div class="modal-mask" data-close-logs></div>
+  <div class="modal-card" role="dialog" aria-label="调用日志" style="width:680px">
+    <div class="modal-head">
+      <div class="t">调用日志</div>
+      <div class="sub" id="logsMeta"></div>
+      <button class="xbtn" type="button" data-close-logs aria-label="关闭">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="logs-tools">
+        <div class="seg" id="logFilter">
+          <button type="button" data-filter="all" class="on">全部</button>
+          <button type="button" data-filter="err">只看失败</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="ghost" id="refreshLogs" type="button">刷新</button>
+        <button class="ghost danger" id="clearLogs" type="button">清空</button>
+      </div>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>

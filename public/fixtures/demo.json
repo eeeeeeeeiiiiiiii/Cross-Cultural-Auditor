@@ -1,0 +1,162 @@
+{
+  "source": "我们的面膜采用天然草本精华，一抹即白，让您爱不释手。女神节送礼首选！",
+  "note": "演示数据：用于演示模式与断网兜底。targetQuote 必须与 translation 逐字一致。",
+  "markets": {
+    "us": {
+      "translation": "Our mask is made with natural herbal essences. One wipe and you're white — you won't want to put it down. The top choice for Goddess Festival gifts.",
+      "audit": {
+        "summary": "译文可用，但「变白」与「女神节」两处必须改",
+        "findings": [
+          {
+            "category": "skin_race",
+            "severity": "P0",
+            "sourceQuote": "一抹即白",
+            "targetQuote": "One wipe and you're white",
+            "issue": "把「变白」当卖点，同时踩肤色与功效两条红线",
+            "why": "英语市场里「变白」会被读作暗示浅肤色更优（colorism）；同时宣称改变肤色，在美国属于药品功效范畴，普通化妆品不能这样写。",
+            "suggestions": [
+              { "text": "Instantly brightens dull skin", "note": "只说提亮暗沉，不涉及肤色改变" }
+            ],
+            "confidence": 0.93
+          },
+          {
+            "category": "literal",
+            "severity": "P1",
+            "sourceQuote": "女神节",
+            "targetQuote": "Goddess Festival",
+            "issue": "中文电商造节，英语世界没有这个概念",
+            "why": "「女神节」是中国电商凭空造的促销节点，直译后读者无法锚定时间与场景；同一时期美国真实存在的节点是 International Women's Day。",
+            "suggestions": [
+              { "text": "International Women's Day", "note": "落到本地真实节点，保留送礼时效性" }
+            ],
+            "confidence": 0.88
+          },
+          {
+            "category": "legal",
+            "severity": "P2",
+            "sourceQuote": "天然草本",
+            "targetQuote": "natural herbal essences",
+            "issue": "natural 在美国属受监管宣称",
+            "why": "FTC 对「natural」有明确使用标准，配方不满足时属误导性宣称；改为描述成分来源更安全。",
+            "suggestions": [
+              { "text": "botanical extracts", "note": "只陈述成分来源，不作天然性承诺" }
+            ],
+            "confidence": 0.72
+          },
+          {
+            "category": "literal",
+            "severity": "P2",
+            "sourceQuote": "爱不释手",
+            "targetQuote": "you won't want to put it down",
+            "issue": "该短语多用于手持物件，面膜语义不搭",
+            "why": "英语里 put it down 通常指放下手里的东西（书、手机）。面膜是敷在脸上的，读起来像机翻，会削弱说服力。",
+            "suggestions": [
+              { "text": "you'll keep reaching for it", "note": "改成「反复回购」的动作感" }
+            ],
+            "confidence": 0.68
+          }
+        ]
+      }
+    },
+    "mena": {
+      "translation": "قناعنا مصنوع من مستخلصات أعشاب طبيعية. يمنح بشرتك لونًا أبيض بعد استخدام واحد — ولن ترغب في التخلي عنه. الخيار الأول لهدايا عيد الإلهة.",
+      "audit": {
+        "summary": "「女神」与「变白」两处为硬伤，其余为语感问题",
+        "findings": [
+          {
+            "category": "religion",
+            "severity": "P0",
+            "sourceQuote": "女神节",
+            "targetQuote": "عيد الإلهة",
+            "issue": "「女神」直译成神祇，属宗教冒犯",
+            "why": "إلهة 在阿拉伯语里指「女神／神祇」，带有明确的多神教含义。用在促销里会被读作对宗教的不敬，而不是夸赞女性。",
+            "suggestions": [
+              { "text": "اليوم العالمي للمرأة", "note": "换成当地真实存在的女性节日" }
+            ],
+            "confidence": 0.9
+          },
+          {
+            "category": "skin_race",
+            "severity": "P0",
+            "sourceQuote": "一抹即白",
+            "targetQuote": "يمنح بشرتك لونًا أبيض بعد استخدام واحد",
+            "issue": "以「变白」为卖点，在本地同样不宜",
+            "why": "把肤色变白当作功效，在阿拉伯语市场也会引发争议；更稳妥的说法是「提亮、改善暗沉」。",
+            "suggestions": [
+              { "text": "يمنح بشرتك إشراقًا فوريًا", "note": "改为提亮，不涉及肤色改变" }
+            ],
+            "confidence": 0.86
+          },
+          {
+            "category": "literal",
+            "severity": "P1",
+            "sourceQuote": "爱不释手",
+            "targetQuote": "ولن ترغب في التخلي عنه",
+            "issue": "直译后语义偏「不愿丢弃」",
+            "why": "التخلي عنه 更接近「舍弃、抛弃」，用在护肤品上显得别扭，语气也偏生硬。",
+            "suggestions": [
+              { "text": "وستعود إليه دائمًا", "note": "改成「你会一直回购它」" }
+            ],
+            "confidence": 0.66
+          }
+        ]
+      }
+    },
+    "sea": {
+      "translation": "Masker kami terbuat dari ekstrak herbal alami. Sekali pakai, kulit Anda langsung putih — Anda tidak akan ingin melepasnya. Pilihan utama untuk hadiah Festival Dewi.",
+      "audit": {
+        "summary": "节日与肤色两处需改，其余为语感",
+        "findings": [
+          {
+            "category": "religion",
+            "severity": "P0",
+            "sourceQuote": "女神节",
+            "targetQuote": "Festival Dewi",
+            "issue": "Dewi 带印度教—巴厘岛宗教色彩",
+            "why": "Dewi 在印尼语／爪哇语里指「女神」，与巴厘岛印度教语境绑定。用作促销节点会被认为轻慢宗教，也没有指向任何真实的当地节日。",
+            "suggestions": [
+              { "text": "Hari Perempuan Internasional", "note": "换成国际妇女节，本地有认知" }
+            ],
+            "confidence": 0.87
+          },
+          {
+            "category": "skin_race",
+            "severity": "P0",
+            "sourceQuote": "一抹即白",
+            "targetQuote": "kulit Anda langsung putih",
+            "issue": "「立刻变白」在本地仍是争议表述",
+            "why": "印尼的肤色议题敏感度低于欧美，但「变白」依然是争议点；同时功效表述需符合 BPOM 对化妆品的宣称规则。",
+            "suggestions": [
+              { "text": "kulit Anda tampak lebih cerah", "note": "改为提亮，不承诺肤色改变" }
+            ],
+            "confidence": 0.83
+          },
+          {
+            "category": "legal",
+            "severity": "P1",
+            "sourceQuote": "天然草本",
+            "targetQuote": "ekstrak herbal alami",
+            "issue": "alami 属受关注宣称，且涉清真语境",
+            "why": "印尼对「alami／天然」类宣称有审查要求；草本类化妆品若未取得 BPJPH 清真认证，更不宜暗示宗教合规性。",
+            "suggestions": [
+              { "text": "ekstrak botani", "note": "只陈述植物来源，回避天然与清真暗示" }
+            ],
+            "confidence": 0.64
+          },
+          {
+            "category": "literal",
+            "severity": "P2",
+            "sourceQuote": "爱不释手",
+            "targetQuote": "Anda tidak akan ingin melepasnya",
+            "issue": "melepas 是「取下、松开」，与面膜不搭",
+            "why": "这句是中文「爱不释手」的直接搬运，印尼语母语者不会用 melepas 形容护肤品的黏性体验，读起来像机翻。",
+            "suggestions": [
+              { "text": "Anda akan terus memakainya", "note": "改成「你会一直用它」" }
+            ],
+            "confidence": 0.7
+          }
+        ]
+      }
+    }
+  }
+}

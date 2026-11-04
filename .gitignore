@@ -1,0 +1,19 @@
+# 本地密钥，绝不提交
+.env
+
+# Python 编译缓存
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行时产物
+logs/
+.shots/
+*.log
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
